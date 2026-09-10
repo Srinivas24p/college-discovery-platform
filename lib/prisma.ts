@@ -8,12 +8,9 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error(
-      "DATABASE_URL environment variable is missing. Please check your .env file."
-    );
-  }
+  const connectionString =
+    process.env.DATABASE_URL ||
+    "postgresql://postgres:postgres@localhost:5432/placeholder?schema=public";
 
   const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
