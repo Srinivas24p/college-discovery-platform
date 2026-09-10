@@ -1,0 +1,180 @@
+// Prisma schema for College Discovery Platform
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CollegeOwnership {
+  PUBLIC
+  PRIVATE
+  DEEMED
+  AUTONOMOUS
+}
+
+enum DegreeLevel {
+  B_TECH
+  M_TECH
+  B_SC
+  M_SC
+  BBA
+  MBA
+  MBBS
+  B_DES
+  OTHER
+}
+
+model Location {
+  id        String    @id @default(cuid())
+  city      String
+  state     String
+  country   String    @default("India")
+  latitude  Float?
+  longitude Float?
+  colleges  College[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([city, state])
+  @@index([city])
+  @@index([state])
+}
+
+model College {
+  id              String           @id @default(cuid())
+  name            String
+  slug            String           @unique
+  tagline         String?
+  description     String           @db.Text
+  overview        String?          @db.Text
+  establishedYear Int?
+  ownership       CollegeOwnership @default(PUBLIC)
+  campusSizeAcres Float?
+  website         String?
+  email           String?
+  phone           String?
+  logoUrl         String?
+  bannerUrl       String?
+  rating          Float            @default(0.0)
+  reviewCount     Int              @default(0)
+  nirfRanking     Int?
+  naacGrade       String?
+  minAnnualFee    Int              @default(0)
+  maxAnnualFee    Int              @default(0)
+  currency        String           @default("INR")
+
+  locationId      String
+  location        Location         @relation(fields: [locationId], references: [id], onDelete: Restrict)
+
+  courses         Course[]
+  placements      Placement[]
+  reviews         Review[]
+  cutoffs         Cutoff[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([name])
+  @@index([rating])
+  @@index([nirfRanking])
+  @@index([ownership])
+  @@index([minAnnualFee, maxAnnualFee])
+  @@index([locationId])
+}
+
+model Course {
+  id                  String      @id @default(cuid())
+  name                String
+  degree              DegreeLevel @default(B_TECH)
+  specialization      String?
+  durationYears       Int         @default(4)
+  annualTuitionFee    Int
+  totalSeats          Int?
+  eligibilityCriteria String?     @db.Text
+
+  collegeId           String
+  college             College     @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  cutoffs             Cutoff[]
+
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@index([collegeId])
+  @@index([degree])
+  @@index([annualTuitionFee])
+}
+
+model Placement {
+  id                  String   @id @default(cuid())
+  academicYear        String
+  highestPackageLPA   Float
+  averagePackageLPA   Float
+  medianPackageLPA    Float?
+  placementPercentage Float?
+  totalOffers         Int?
+  topRecruiters       String[]
+
+  collegeId           String
+  college             College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([collegeId, academicYear])
+  @@index([collegeId])
+  @@index([academicYear])
+  @@index([averagePackageLPA])
+}
+
+model Review {
+  id                    String   @id @default(cuid())
+  authorName            String
+  authorRole            String?
+  rating                Float
+  title                 String
+  comment               String   @db.Text
+  pros                  String?  @db.Text
+  cons                  String?  @db.Text
+  campusLifeRating      Float?
+  infrastructureRating  Float?
+  facultyRating         Float?
+  placementRating       Float?
+  isVerified            Boolean  @default(true)
+
+  collegeId             String
+  college               College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime @default(now())
+
+  @@index([collegeId])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+model Cutoff {
+  id           String   @id @default(cuid())
+  examName     String
+  academicYear Int
+  round        Int      @default(1)
+  category     String   @default("General")
+  quota        String   @default("All India")
+  openingRank  Int
+  closingRank  Int
+
+  collegeId    String
+  college      College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  courseId     String?
+  course       Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  createdAt    DateTime @default(now())
+
+  @@index([examName, category, closingRank])
+  @@index([collegeId, examName])
+  @@index([closingRank])
+}
