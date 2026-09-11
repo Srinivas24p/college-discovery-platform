@@ -11,7 +11,8 @@
     "test": "tsx tests/collegeApi.test.ts && tsx tests/collegeService.test.ts && tsx tests/collegeDetail.test.ts && tsx tests/collegeCompare.test.ts && tsx tests/collegePredictor.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "build:render": "prisma db push --accept-data-loss && npm run db:seed && next build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -1,0 +1,22 @@
+databases:
+  - name: college-discovery-db
+    databaseName: college_discovery_db
+    user: college_user
+    plan: free
+
+services:
+  - type: web
+    name: college-discovery-platform
+    runtime: node
+    plan: free
+    buildCommand: npm run build:render
+    startCommand: npm run start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: college-discovery-db
+          property: connectionString
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: NODE_ENV
+        value: production
