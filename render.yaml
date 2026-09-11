@@ -9,7 +9,7 @@ services:
     name: college-discovery-platform
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build:render
+    buildCommand: npm install --include=dev && npm run build:render
     startCommand: npm run start
     envVars:
       - key: DATABASE_URL
