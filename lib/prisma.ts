@@ -15,7 +15,11 @@ function createPrismaClient(): PrismaClient {
     process.env.POSTGRES_URL ||
     "postgresql://postgres:postgres@localhost:5432/placeholder?schema=public";
 
-  const pool = new Pool({ connectionString });
+  const isLocal = connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
+  const pool = new Pool({
+    connectionString,
+    ssl: isLocal ? false : { rejectUnauthorized: false },
+  });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 }
